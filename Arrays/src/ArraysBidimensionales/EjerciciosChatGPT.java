@@ -33,68 +33,103 @@ public class EjerciciosChatGPT {
         new EjerciciosChatGPT().ejercicio();
     }
 
+    public int pedirNumero() {
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Introduce un número mayor o igual que 4:");
+        int n = sc.nextInt();
+        while (n < 4) {
+            System.out.println("Debe ser >= 4:");
+            n = sc.nextInt();
+        }
+        return n;
+    }
+
     public int[][] generarMatriz(int n) {
-        int[][] arrayVacio = new int[n][n];
-        return arrayVacio;
+        return new int[n][n];
     }
 
     public int[][] llenarMatriz(int[][] arrayVacio) {
         Random random = new Random();
         for (int i = 0; i < arrayVacio.length; i++) {
-
             for (int j = 0; j < arrayVacio.length; j++) {
                 arrayVacio[i][j] = random.nextInt(0, 50);
             }
-
         }
         return arrayVacio;
     }
 
-    public void ejercicio() {
-        Scanner sc = new Scanner(System.in);
-        System.out.println("Porfavor, indicame un número mayor que 4 para generar una matriz con\nnumeros aleatorios:");
-        int[][] array = llenarMatriz(generarMatriz(sc.nextInt()));
-        int sumaMax = 0;
-        int suma = 0;
-        int[][] maxDos = new int[2][2];
-        for (int i = 0; i < array.length - 1; i++) {
-            for (int j = 0; j < array.length - 1; j++) {
-                if (array[i][j] % 2 == 0 && array[i + 1][j + 1] % 2 == 0 && array[i + 1][j] % 2 == 0
-                        && array[i][j + 1] % 2 == 0) {
-
-                    suma = array[i][j] + array[i + 1][j + 1] + array[i + 1][j] + array[i][j + 1];
-                    if (suma > sumaMax) {
-                        sumaMax = suma;
-                        maxDos[0][0] = array[i][j];
-                        maxDos[1][1] = array[i + 1][j + 1];
-                        maxDos[1][0] = array[i + 1][j];
-                        maxDos[0][1] = array[i][j + 1];
-                    }
-                }
-            }
-
-        }
-
-        System.out.println("Matriz generada:");
+    public void imprimir(int[][] array) {
         for (int i = 0; i < array.length; i++) {
             for (int j = 0; j < array[i].length; j++) {
                 System.out.print(array[i][j] + "\t");
             }
             System.out.println();
         }
+    }
 
-        if (sumaMax == 0) {
-            System.out.println("No se ha encontrado ninguna submatriz 2x2 compuesta de numeros pares");
-        } else {
-            System.out.println("La submatriz 2x2 máxima que se ha encontrado ha sido:");
-            for (int x = 0; x < 2; x++) {
-                for (int y = 0; y < 2; y++) {
-                    System.out.print(maxDos[x][y] + "\t");
+    public boolean submatrizPar(int[][] array, int posX, int posY, int size) {
+        for (int i = posX; i < posX + size; i++) {
+
+            for (int j = posY; j < posY + size; j++) {
+                if (!(array[i][j] % 2 == 0)) {
+                    return false;
                 }
-                System.out.println();
+            }
+
+        }
+        return true;
+    }
+
+    public int[][] rellenarSolucion(int[][] array, int n, int posX, int posY) {
+        int arrayRelleno[][] = new int[n][n];
+        for (int i = posX; i < array.length; i++) {
+            for (int j = posY; j < arrayRelleno.length; j++) {
+                arrayRelleno[i][j] = array[i][j];
+                arrayRelleno[j][i] = array[j][i];
             }
         }
-        sc.close();
+        return arrayRelleno;
+    }
+
+    public void ejercicio() {
+        int[][] array = llenarMatriz(generarMatriz(pedirNumero()));
+        int size = array.length, sizeMax = 0;
+        int sumaMax, suma = 0;
+        int posX = 0, posY = 0;
+
+        for (int i = 0; i < array.length - 1; i++) {
+            for (int j = 0; j < array.length - 1; j++) {
+                for (int z = 0; z < array.length - z - 1; z++) {
+                    if (submatrizPar(array, posX, posY, size)) {
+                        suma = array[i][j] + array[i + z][j + z] + array[i + z][j] + array[i][j + z];
+                        size = z;
+                        if (suma > sumaMax && size > sizeMax) {
+                            posX = i;
+                            posY = j;
+                            sizeMax = z;
+                            sumaMax = suma;
+                            int arrayMax[][] = new int[sizeMax][sizeMax];
+                            arrayMax = rellenarSolucion(array, array.length, posX, posY);
+                            // maxDos[0][0] = array[i][j];
+                            // maxDos[1][1] = array[i + 1][j + 1];
+                            // maxDos[1][0] = array[i + 1][j];
+                            // maxDos[0][1] = array[i][j + 1];
+                        }
+                    }
+                }
+            }
+        }
+        System.out.println("Matriz generada:");
+        ;
+        imprimir(array);
+
+        if (sumaMax == 0) {
+            System.out.println("No se ha encontrado ninguna submatriz compuesta de numeros pares");
+        } else {
+            System.out.printf("La submatriz  máxima que se ha encontrado ha sido de tamaño %d, cuyos digitos suman %d",
+                    sizeMax, sumaMax);
+            System.out.println(arrayMax.toString());
+        }
 
     }
 }
